@@ -10,6 +10,9 @@ var spawn   = require('child_process').spawn;
 var email   = require('emailjs/email');
 var mailer  = email.server.connect(config.email);
 var crypto  = require('crypto');
+var async   = require('async');
+var _       = require('lodash');
+YAML = require('yamljs');
 
 app.use(express.bodyParser({
     verify: function(req,res,buffer){
@@ -137,6 +140,62 @@ app.post('/hooks/jekyll/*', function(req, res) {
             });
         });
     }, req, res);
+
+});
+
+app.post('/form/:type', function(req, res){
+    var email =  req.params.type + '@tikalk.com';
+
+    var cvPath
+    async.series([
+            function(next){
+                if(req.files && !_.isEmpty(req.files)){
+                    //Validate file is not a virus
+
+
+                    fs.readFile(req.files.files.submitted_click_to_add_your_cv.path, function (err, data) {
+                        // ...
+                        cvPath = __dirname + '/uploads/cv-'+req.body.email_address+'-'+req.files.files.submitted_click_to_add_your_cv.name;
+                        fs.writeFile(cvPath, data, function (err) {
+                            next(err);
+                        });
+                    });
+                }else{
+                    next();
+                }
+            },
+            function(next){
+                var subject = req.params.type +' message from Tikalk.com';
+                var body = YAML.stringify(req.body, 4);
+
+                var message = {
+                    text: body,
+                    from: req.body.email_address,
+                    to: email,
+                    subject: subject
+                };
+                if(cvPath){
+                    message.attachment = [
+                        {path: cvPath, type: req.files.files.submitted_click_to_add_your_cv.type,
+                            name: req.files.files.submitted_click_to_add_your_cv.name}
+                    ]
+                }
+                mailer.send(message, function(err) { if (err) console.warn(err);
+                    next(err);
+                });
+            }
+        ],
+
+        function(err){
+            if(err){
+                res.send(500, err);
+            }else{
+                res.send(200);
+            }
+        }
+    );
+
+
 
 });
 

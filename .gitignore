@@ -1,3 +1,7 @@
 node_modules
 config.json
 test.json
+.idea/
+req.files.*
+uploads/cv-*
+config.json
