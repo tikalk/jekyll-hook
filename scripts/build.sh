@@ -25,5 +25,5 @@ cd -
 
 # Run jekyll
 cd $source
-jekyll build -s $source -d $build
+LC_ALL="en_US.UTF-8" jekyll build -s $source -d $build
 cd -

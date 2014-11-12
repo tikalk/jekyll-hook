@@ -18,7 +18,7 @@ source=$5
 build=$6
 
 # S3 bucket
-bucket=# set your S3 bucket here #
+bucket=tikalk-website
 
 if [[ "$repo" == *.github.* ]]
 then
