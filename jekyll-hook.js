@@ -170,7 +170,7 @@ app.post('/form/:type', function(req, res){
 
                 var message = {
                     text: body,
-                    from: req.body.email_address,
+                    from: req.body.submitted.email_address,
                     to: email,
                     subject: subject
                 };
