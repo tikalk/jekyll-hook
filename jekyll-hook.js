@@ -187,7 +187,12 @@ app.post('/form/:type', function(req, res){
                             name: req.files.files.submitted_click_to_add_your_cv.name}
                     ]
                 }
-                mailer.send(message, function(err) { if (err) console.warn(err);
+                mailer.send(message, function(err) {
+                    if (err){
+                        console.warn('Failed to send email:');
+                        console.warn(JSON.stringify(message));
+                        console.warn(err);
+                    }
                     next(err);
                 });
             }
