@@ -168,9 +168,16 @@ app.post('/form/:type', function(req, res){
                 var subject = req.params.type +' message from Tikalk.com';
                 var body = YAML.stringify(req.body, 4);
 
+                var fromEmail;
+                if(req.body.submitted){
+                    fromEmail = req.body.submitted.email_address;
+                }else{
+                    fromEmail = req.body.email_address;
+                }
+
                 var message = {
                     text: body,
-                    from: req.body.email_address,
+                    from: fromEmail,
                     to: email,
                     subject: subject
                 };
