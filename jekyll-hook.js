@@ -12,6 +12,7 @@ var mailer  = email.server.connect(config.email);
 var crypto  = require('crypto');
 var async   = require('async');
 var _       = require('lodash');
+var moment  = require('moment');
 YAML = require('yamljs');
 
 app.use(express.bodyParser({
@@ -97,7 +98,7 @@ app.post('/hooks/jekyll/*', function(req, res) {
             throw new Error('No default build script defined.');
           }
         }
-        
+
         var publish_script = null;
         try {
           publish_script = config.scripts[data.branch].publish;
@@ -206,9 +207,63 @@ app.post('/form/:type', function(req, res){
             }
         }
     );
+});
+
+app.post('/post', function (req, res) {
+  var title = req.body.title,
+      content = req.body.content,
+      author = req.body.author,
+      permalink = req.body.permalink,
+      tags = req.body.tags || [];
+
+  //create a .md post file
+  var fileData = ['---',
+    'layout: post',
+    'title: '+title,
+    'created: '+Date.now(),
+    'permalink: '+permalink,
+    'tags:'];
 
 
+  tags.forEach(function (tag) {
+    fileData.push('- '+tag);
+  });
+  fileData.push('---\n');
+  var fileName;
+  async.series([
+    function (next) {
+      fileName = path.join(__dirname, '.tmp', moment().format('YYYY-MM-DD') + title.replace(/\s/g, '-').toLowerCase()+'.md');
+      fs.exists(fileName, function (exists) {
+        if(exists){
+          return next('post exists');
+        }else{
+          next();
+        }
+      });
+    },
+    function (next) {
+      fs.writeFile(fileName, data, {encoding: 'utf-8'}, function (err) {
+        if (err) {
+          return next(err);
+        }
+        next();
+      });
+    },
+    function (next) {
+      //
+    }
+  ],
+  function (err) {
+    if(err){
+      return res.send(500, err);
+    }
+    res.send(200);
 
+  });
+
+  //commit and push it to github
+
+  //create a pull request
 });
 
 // Start server
